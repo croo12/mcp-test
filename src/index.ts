@@ -7,7 +7,6 @@ import { z } from "zod";
 import {
   CODE_REVIEW_TOOL_DESCRIPTION,
   CODE_REVIEW_TOOL_NAME,
-  CodeReviewToolSchema,
   runCodeReviewTool,
 } from "./tools/code-review.js";
 

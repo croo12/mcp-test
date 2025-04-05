@@ -4,7 +4,7 @@ import { z } from "zod";
 
 /**
  * 이 도구는 지정된 폴더의 코드 변경사항을 검토하는 데 사용됩니다.
- * main 브랜치와 비교하여 지정된 폴더에서 git diff를 실행하고 검토/수정할 사항에 대한 지침을 제공합니다.
+ * 이전 커밋과 비교하여 지정된 폴더에서 git diff를 실행하고 검토/수정할 사항에 대한 지침을 제공합니다.
  */
 
 export const CODE_REVIEW_TOOL_NAME = "code-review";
@@ -24,17 +24,26 @@ export async function runCodeReviewTool(
 
   let gitDiff = "";
   try {
-    gitDiff = execSync(`git -C "${folderPath}" diff`, {
-      stdio: "pipe",
+    // 스테이징된 변경사항과 스테이징되지 않은 변경사항 모두 확인
+    const stagedDiff = execSync(`git -C "${folderPath}" diff --staged`, {
       encoding: "utf-8",
     });
+    const unstagedDiff = execSync(`git -C "${folderPath}" diff`, {
+      encoding: "utf-8",
+    });
+
+    gitDiff =
+      "=== Staged Changes ===\n" +
+      stagedDiff +
+      "\n=== Unstaged Changes ===\n" +
+      unstagedDiff;
   } catch (error) {
     console.error(error);
     gitDiff = `Error running git diff: ${error}`;
   }
 
   const instructions =
-    "Review this diff for any ovious issues. Fix them if found, then finalize the changes.";
+    "Review this diff for any obvious issues. Fix them if found, then finalize the changes.";
 
   const message = `Git Diff Output:\n${gitDiff}\n\nInstructions:\n${instructions}`;
 
