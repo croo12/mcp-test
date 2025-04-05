@@ -1,0 +1,12 @@
+{
+  "name": "mcp-study",
+  "version": "1.0.0",
+  "description": "mcp에 대해 알아보자",
+  "main": "index.js",
+  "repository": "https://github.com/croo12/mcp-test.git",
+  "author": "its19447 <its19447@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0"
+  }
+}
