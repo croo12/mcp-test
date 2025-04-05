@@ -1,18 +1,23 @@
 {
-  "name": "mcp-study",
+  "name": "mcp-test",
   "version": "0.0.1",
   "description": "mcp에 대해 알아보자",
-  "main": "index.js",
+  "main": "build/index.js",
+  "bin": {
+    "mcp-test": "./build/cli.js"
+  },
   "repository": "https://github.com/croo12/mcp-test.git",
   "author": "its19447 <its19447@gmail.com>",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "prepare": "npm run build"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.8.0"
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "commander": "^13.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",

@@ -2,9 +2,14 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import express from "express";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import {
+  CODE_REVIEW_TOOL_DESCRIPTION,
+  CODE_REVIEW_TOOL_NAME,
+  CodeReviewToolSchema,
+  runCodeReviewTool,
+} from "./tools/code-review.js";
 
 const server = new McpServer({
   name: "mcp-test",
@@ -27,6 +32,15 @@ server.resource(
       },
     ],
   })
+);
+
+server.tool(
+  CODE_REVIEW_TOOL_NAME,
+  CODE_REVIEW_TOOL_DESCRIPTION,
+  {
+    folderPath: z.string(),
+  },
+  runCodeReviewTool
 );
 
 server.tool("echo", { message: z.string() }, async ({ message }) => ({
@@ -58,33 +72,13 @@ server.resource(
   })
 );
 
-const app = express();
-
-const transports = new Map<string, SSEServerTransport>();
-
-app.get("/sse", async (_, res) => {
-  const transport = new SSEServerTransport("/messages", res);
-  transports.set(transport.sessionId, transport);
-
-  res.on("close", () => {
-    transports.delete(transport.sessionId);
-  });
-
-  res.send("Hello World");
-
+async function main() {
+  const transport = new StdioServerTransport();
   await server.connect(transport);
-});
+  console.error("Cursor Tools MCP Server is running");
+}
 
-app.post("/messages", async (req, res) => {
-  const sessionId = req.query.sessionId as string;
-  const transport = transports.get(sessionId);
-  if (transport) {
-    await transport.handlePostMessage(req, res);
-  } else {
-    res.status(400).send("No transport found for sessionId");
-  }
-});
-
-app.listen(7979, () => {
-  console.log("Server started");
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });
