@@ -1,0 +1,8 @@
+{
+  "mcpServers": [
+    {
+      "name": "mcp-test",
+      "transport": "stdio"
+    }
+  ]
+}
