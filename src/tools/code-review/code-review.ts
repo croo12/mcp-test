@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { CODE_REVIEW_PROMPT } from "./prompt.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execSync } from "node:child_process";
@@ -52,23 +52,46 @@ export async function runCodeReviewTool(
 
   const message = `Git Diff Output:\n${gitDiff}\n\nInstructions:\n${instructions}`;
 
-  const response = await genai.models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: message,
-    config: {
-      responseMimeType: "text/plain",
-      systemInstruction: CODE_REVIEW_PROMPT,
-    },
-  });
-
-  console.log(response);
-
-  return {
-    content: [
-      {
-        type: "text",
-        text: response.data ?? "",
+  try {
+    const response = await genai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: message,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          comments: {
+            type: Type.OBJECT,
+            properties: {
+              commentResult: {
+                type: Type.STRING,
+              },
+              commentDetail: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.STRING,
+                },
+              },
+            },
+            propertyOrdering: ["commentResult", "commentDetail"],
+          },
+        },
+        systemInstruction: CODE_REVIEW_PROMPT,
       },
-    ],
-  };
+    });
+
+    console.debug(response.text);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: response.text ?? "",
+        },
+      ],
+    };
+  } catch (error) {
+    console.debug(error);
+    console.error("Error running code review tool");
+  }
 }
