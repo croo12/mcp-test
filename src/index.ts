@@ -8,7 +8,7 @@ import {
   CODE_REVIEW_TOOL_DESCRIPTION,
   CODE_REVIEW_TOOL_NAME,
   runCodeReviewTool,
-} from "./tools/code-review.js";
+} from "./tools/code-review/code-review.js";
 
 const server = new McpServer({
   name: "mcp-test",

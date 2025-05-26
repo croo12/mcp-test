@@ -1,5 +1,7 @@
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { execSync } from "child_process";
+import { GoogleGenAI } from "@google/genai";
+import { CODE_REVIEW_PROMPT } from "./prompt.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { execSync } from "node:child_process";
 import { z } from "zod";
 
 /**
@@ -17,6 +19,10 @@ export const CodeReviewToolSchema = z.object({
 
 export type CodeReviewToolArgs = z.infer<typeof CodeReviewToolSchema>;
 
+const genai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
 export async function runCodeReviewTool(
   args: CodeReviewToolArgs
 ): Promise<CallToolResult> {
@@ -32,11 +38,10 @@ export async function runCodeReviewTool(
       encoding: "utf-8",
     });
 
-    gitDiff =
-      "=== Staged Changes ===\n" +
-      stagedDiff +
-      "\n=== Unstaged Changes ===\n" +
-      unstagedDiff;
+    gitDiff = `=== Staged Changes ===\n
+    ${stagedDiff}\n
+    === Unstaged Changes ===\n
+    ${unstagedDiff}`;
   } catch (error) {
     console.error(error);
     gitDiff = `Error running git diff: ${error}`;
@@ -47,11 +52,22 @@ export async function runCodeReviewTool(
 
   const message = `Git Diff Output:\n${gitDiff}\n\nInstructions:\n${instructions}`;
 
+  const response = await genai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: message,
+    config: {
+      responseMimeType: "text/plain",
+      systemInstruction: CODE_REVIEW_PROMPT,
+    },
+  });
+
+  console.log(response);
+
   return {
     content: [
       {
         type: "text",
-        text: message,
+        text: response.data ?? "",
       },
     ],
   };
