@@ -60,7 +60,7 @@ export async function runCodeReviewTool(
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.ARRAY,
-          comments: {
+          items: {
             type: Type.OBJECT,
             properties: {
               commentResult: {
@@ -93,5 +93,7 @@ export async function runCodeReviewTool(
   } catch (error) {
     console.debug(error);
     console.error("Error running code review tool");
+
+    throw error;
   }
 }
