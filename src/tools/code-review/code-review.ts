@@ -47,10 +47,7 @@ export async function runCodeReviewTool(
     gitDiff = `Error running git diff: ${error}`;
   }
 
-  const instructions =
-    "Review this diff for any obvious issues. Fix them if found, then finalize the changes.";
-
-  const message = `Git Diff Output:\n${gitDiff}\n\nInstructions:\n${instructions}`;
+  const message = `${CODE_REVIEW_PROMPT}\n\nGit Diff Output:\n${gitDiff}\n`;
 
   try {
     const response = await genai.models.generateContent({
@@ -76,7 +73,6 @@ export async function runCodeReviewTool(
             propertyOrdering: ["commentResult", "commentDetail"],
           },
         },
-        systemInstruction: CODE_REVIEW_PROMPT,
       },
     });
 
